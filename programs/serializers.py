@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from .models import Program, ProgramSlot, ProgramSlotType
+from .models import Program, ProgramSlot, ProgramSlotType, ProgramSlotRecord
 
 
 class ProgramSlotSerializer(serializers.ModelSerializer):
@@ -16,6 +16,18 @@ class ProgramSlotSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProgramSlot
         fields = ["id", "starts_at", "ends_at", "capacity", "reserve", "waiting"]
+
+
+class ProgramSlotRecordSerializer(serializers.ModelSerializer):
+    slot = ProgramSlotSerializer()
+    type = serializers.SerializerMethodField()
+
+    def get_type(self, instance):
+        return instance.type.name
+
+    class Meta:
+        model = ProgramSlotRecord
+        fields = ["id", "type", "participated", "slot"]
 
 
 class ProgramDetailSerializer(serializers.ModelSerializer):
