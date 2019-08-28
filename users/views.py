@@ -1,15 +1,25 @@
 from django.contrib.auth import login, logout
-from django.shortcuts import render
+from rest_framework import status, generics
+from rest_framework import views
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.authtoken.models import Token
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from rest_framework.views import APIView
-from rest_framework import status
 
-from users.serializers import LoginSerializer
+from .serializers import LoginSerializer, UserSerializer, UserCreateSerializer
 
 
-class LoginView(APIView):
+class UserProfile(views.APIView):
+    serializer_class = UserSerializer
+
+    def get(self, request):
+        user_data = UserSerializer(self.request.user)
+        return Response({'user': user_data.data})
+
+
+class UserLogin(views.APIView):
+    permission_classes = (AllowAny,)
+
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -19,10 +29,18 @@ class LoginView(APIView):
         return Response({'token': token.key}, status=status.HTTP_200_OK)
 
 
-class LogoutView(APIView):
-    authentication_classes = (TokenAuthentication, )
+class RegisterUser(generics.CreateAPIView):
+    serializer_class = UserCreateSerializer
+    permission_classes = (AllowAny,)
+
+    def post(self, request, *args, **kwargs):
+        response = self.create(request, *args, **kwargs)
+        return Response({'user': response.data})
+
+
+class UserLogout(views.APIView):
+    authentication_classes = (TokenAuthentication,)
 
     def post(self, request):
         logout(request)
         return Response(status=status.HTTP_204_NO_CONTENT)
-
