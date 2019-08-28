@@ -1,7 +1,7 @@
 from django.contrib.auth import login, logout
 from rest_framework import status, generics
 from rest_framework import views
-from rest_framework.authentication import TokenAuthentication
+from rest_framework.authentication import TokenAuthentication, SessionAuthentication
 from rest_framework.authtoken.models import Token
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -10,6 +10,7 @@ from .serializers import LoginSerializer, UserSerializer, UserCreateSerializer
 
 
 class UserProfile(views.APIView):
+    authentication_classes = (TokenAuthentication, )
     serializer_class = UserSerializer
 
     def get(self, request):
