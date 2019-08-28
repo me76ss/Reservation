@@ -40,9 +40,7 @@ class ProgramSlotType(Enum):
 
 
 class ProgramSlotRecord(models.Model):
-    # type = models.CharField(max_length=50, choices=ProgramSlotType)
-    # remove these if not needed. I changed them because i got some errors in migration.
-    type = models.CharField(max_length=50, choices=((t, t.value) for t in ProgramSlotType))
+    type = models.CharField(max_length=50, choices=((t.name, t.value) for t in ProgramSlotType))
     participated = models.BooleanField(default=False)
 
     slot = models.ForeignKey(ProgramSlot, on_delete=models.CASCADE, related_name='records')

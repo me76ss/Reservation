@@ -19,7 +19,7 @@ class ProgramList(APIView):
 
 
 class ProgramDetail(APIView):
-    # permission_classes = [IsAuthenticated, ]
+    permission_classes = [IsAuthenticated, ]
     authentication_classes = [TokenAuthentication, ]
 
     def get(self, request, pk):
@@ -37,6 +37,16 @@ class ProgramSlotDetail(APIView):
                             status=status.HTTP_417_EXPECTATION_FAILED)
 
         # TODO: check capacity of the slot
-        record = ProgramSlotRecord.objects.create(type=ProgramSlotType.RESERVE, participated=False,
+        record = ProgramSlotRecord.objects.create(type=ProgramSlotType.RESERVE.name, participated=False,
                                                   slot_id=sl_pk, user=request.user)
         return Response(ProgramSlotRecordSerializer(record).data)
+
+
+class UserReserveList(APIView):
+    permission_classes = [IsAuthenticated, ]
+    authentication_classes = [TokenAuthentication, ]
+
+    def get(self, request):
+        records = ProgramSlotRecord.objects.filter(user=request.user).prefetch_related('slot__program')
+
+        return Response(ProgramSlotRecordSerializer(records, many=True).data)
