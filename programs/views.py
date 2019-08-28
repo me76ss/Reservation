@@ -1,11 +1,12 @@
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.authentication import TokenAuthentication
+from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Program, ProgramSlot, ProgramSlotRecord, ProgramSlotType
+from .models import Program, ProgramSlotRecord, ProgramSlotType
 from .serializers import ProgramSerializer, ProgramDetailSerializer, ProgramSlotRecordSerializer
 
 
@@ -33,7 +34,7 @@ class ProgramSlotDetail(APIView):
 
     def post(self, request, pg_pk, sl_pk):
         if ProgramSlotRecord.objects.filter(user=request.user, slot__program_id=pg_pk).exists():
-            return Response(data={'message': 'Already reserved a slot in this program'},
+            return Response(data={'detail': 'Already reserved a slot in this program'},
                             status=status.HTTP_417_EXPECTATION_FAILED)
 
         # TODO: check capacity of the slot
@@ -50,3 +51,16 @@ class UserReserveList(APIView):
         records = ProgramSlotRecord.objects.filter(user=request.user).prefetch_related('slot__program')
 
         return Response(ProgramSlotRecordSerializer(records, many=True).data)
+
+
+class UserReserveDetail(APIView):
+    permission_classes = [IsAuthenticated, ]
+    authentication_classes = [TokenAuthentication, ]
+
+    def delete(self, request, pk):
+        record = get_object_or_404(ProgramSlotRecord, id=pk)
+        if record.user_id != request.user.id:
+            return Response(data={'detail': 'Not your reserve!'}, status=status.HTTP_403_FORBIDDEN)
+
+        record.delete()
+        return Response(data={'detail': 'Deleted'})
