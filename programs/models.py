@@ -49,8 +49,8 @@ class ProgramSlotRecord(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='records')
 
     def __str__(self):
-        return "ProgramSlotRecord (id={}, user:{}, type:{}, participated={})" \
-            .format(self.id, self.user.last_name, self.type, self.participated)
+        return "ProgramSlotRecord (id={}, user:{}, program:{}, type:{}, participated={})" \
+            .format(self.id, self.user.username, self.slot.program.name, self.type, self.participated)
 
 
 class ProgramWhitList(models.Model):
