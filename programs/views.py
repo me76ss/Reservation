@@ -6,7 +6,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Program, ProgramSlotRecord, ProgramSlotType
+from .models import Program, ProgramSlotRecord, ProgramSlotType, ProgramSlot
 from .serializers import ProgramSerializer, ProgramDetailSerializer, ProgramSlotRecordSerializer
 
 
@@ -37,9 +37,17 @@ class ProgramSlotDetail(APIView):
             return Response(data={'detail': 'Already reserved a slot in this program'},
                             status=status.HTTP_417_EXPECTATION_FAILED)
 
-        # TODO: check capacity of the slot
-        record = ProgramSlotRecord.objects.create(type=ProgramSlotType.RESERVE.name, participated=False,
-                                                  slot_id=sl_pk, user=request.user)
+        program = get_object_or_404(Program, pk=pg_pk)
+        slot = get_object_or_404(ProgramSlot, pk=sl_pk)
+        if ProgramSlotRecord.objects.filter(slot_id=sl_pk).count() >= slot.capacity:
+            if program.queueable:
+                record_type = ProgramSlotType.WAITING.name
+            else:
+                return Response(data={'detail': 'Slot is full'}, status=status.HTTP_417_EXPECTATION_FAILED)
+        else:
+            record_type = ProgramSlotType.RESERVE.name
+        record = ProgramSlotRecord.objects.create(type=record_type, participated=False, slot_id=sl_pk,
+                                                  user=request.user)
         return Response(ProgramSlotRecordSerializer(record).data)
 
 
@@ -59,8 +67,17 @@ class UserReserveDetail(APIView):
 
     def delete(self, request, pk):
         record = get_object_or_404(ProgramSlotRecord, id=pk)
+        slot_id = record.slot_id
         if record.user_id != request.user.id:
             return Response(data={'detail': 'Not your reserve!'}, status=status.HTTP_403_FORBIDDEN)
 
         record.delete()
+
+        slot = ProgramSlot.objects.filter(pk=slot_id).prefetch_related('records').get()
+        if slot.records.count() >= slot.capacity:
+            reserve = slot.records.filter(type=ProgramSlotType.WAITING.name).first()
+            if reserve is not None:
+                reserve.type = ProgramSlotType.RESERVE.name
+                reserve.save()
+
         return Response(data={'detail': 'Deleted'})
