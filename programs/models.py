@@ -30,8 +30,11 @@ class ProgramSlot(models.Model):
     def __str__(self):
         start_date = timezone.localtime(self.starts_at)
         end_date = timezone.localtime(self.ends_at)
-
         return "ProgramSlot (id={}, time=[{} - {}], capacity={})".format(self.id, start_date, end_date, self.capacity)
+
+    def is_allowed_to_cancel(self):
+        diff = self.starts_at - timezone.now()
+        return (diff.total_seconds() - self.program.cancel_threshold.second) > 0
 
 
 class ProgramSlotType(Enum):

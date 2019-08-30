@@ -7,7 +7,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Program, ProgramSlotRecord, ProgramSlotType, ProgramSlot
-from .serializers import ProgramSerializer, ProgramDetailSerializer, ProgramSlotRecordSerializer
+from .serializers import ProgramDetailSerializer, ProgramSlotRecordSerializer
 
 
 class ProgramList(APIView):
@@ -16,7 +16,7 @@ class ProgramList(APIView):
 
     def get(self, request):
         programs = Program.objects.filter(ends_at__gte=timezone.now())
-        return Response(ProgramSerializer(programs, many=True).data)
+        return Response(ProgramDetailSerializer(programs, many=True).data)
 
 
 class ProgramDetail(APIView):
@@ -70,6 +70,9 @@ class UserReserveDetail(APIView):
         slot_id = record.slot_id
         if record.user_id != request.user.id:
             return Response(data={'detail': 'Not your reserve!'}, status=status.HTTP_403_FORBIDDEN)
+
+        if not record.slot.is_allowed_to_cancel():
+            return Response(data={'detail': 'Can\'t cancle it now!'}, status=status.HTTP_403_FORBIDDEN)
 
         record.delete()
 
