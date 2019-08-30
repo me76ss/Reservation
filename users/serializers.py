@@ -3,11 +3,21 @@ from django.contrib.auth.models import User
 from rest_framework import serializers, exceptions
 from rest_framework.validators import UniqueValidator
 
+from .models import UserExtraInfo, UserType
+
+
+class UserExtraInfoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserExtraInfo
+        fields = ('id', 'user_type', 'admin_type')
+
 
 class UserSerializer(serializers.ModelSerializer):
+    extra_info = UserExtraInfoSerializer()
+
     class Meta:
         model = User
-        fields = ('id', 'first_name', 'last_name', 'email', 'username')
+        fields = ('id', 'first_name', 'last_name', 'email', 'username', 'extra_info')
 
 
 class LoginSerializer(serializers.Serializer):
@@ -50,6 +60,10 @@ class UserCreateSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             first_name=validated_data['first_name'],
             last_name=validated_data['last_name']
+        )
+        UserExtraInfo.objects.create(
+            user_id=user.id,
+            user_type=UserType.STUDENT.name
         )
         return user
 

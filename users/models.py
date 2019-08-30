@@ -17,7 +17,11 @@ class UserType(Enum):
 
 
 class UserExtraInfo(models.Model):
-    admin_type = models.CharField(max_length=50, choices=((t.name, t.value) for t in AdminType))
-    user_type = models.CharField(max_length=50, choices=((t.name, t.value) for t in UserType))
+    admin_type = models.CharField(max_length=50, choices=((t.name, t.value) for t in AdminType), blank=True)
+    user_type = models.CharField(max_length=50, choices=((t.name, t.value) for t in UserType), blank=True)
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='extra_info')
+
+    def __str__(self):
+        return 'User (id={}, user_id={}, user_type={}, admin_type={})'\
+            .format(self.id, self.user_id, self.user_type, self.admin_type)
