@@ -23,13 +23,13 @@ class ProgramDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Program
-        fields = ["id", "name", "starts_at", "ends_at", "notify_at", "cancel_threshold", "slots"]
+        fields = ["id", "name", "starts_at", "ends_at", "notify_at", "cancel_threshold", "queueable", "slots"]
 
 
 class ProgramSerializer(serializers.ModelSerializer):
     class Meta:
         model = Program
-        fields = ["id", "name", "starts_at", "ends_at", "notify_at", "cancel_threshold"]
+        fields = ["id", "name", "starts_at", "ends_at", "notify_at", "cancel_threshold", "queueable"]
 
 
 class ProgramSlotWithProgramSerializer(serializers.ModelSerializer):

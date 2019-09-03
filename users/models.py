@@ -23,5 +23,14 @@ class UserExtraInfo(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='extra_info')
 
     def __str__(self):
-        return 'User (id={}, user_id={}, user_type={}, admin_type={})'\
+        return 'User (id={}, user_id={}, user_type={}, admin_type={})' \
             .format(self.id, self.user_id, self.user_type, self.admin_type)
+
+
+def is_super_user(self):
+    if self.extra_info is not None:
+        return self.extra_info.admin_type == AdminType.SUPER_ADMIN.name
+    return False
+
+
+User.add_to_class('is_super_user', is_super_user)

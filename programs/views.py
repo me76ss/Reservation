@@ -39,6 +39,10 @@ class ProgramSlotDetail(APIView):
 
         program = get_object_or_404(Program, pk=pg_pk)
         slot = get_object_or_404(ProgramSlot, pk=sl_pk)
+
+        if timezone.now() >= slot.starts_at:
+            return Response(data={'detail': 'Slot is for past'}, status=status.HTTP_417_EXPECTATION_FAILED)
+
         if ProgramSlotRecord.objects.filter(slot_id=sl_pk).count() >= slot.capacity:
             if program.queueable:
                 record_type = ProgramSlotType.WAITING.name
