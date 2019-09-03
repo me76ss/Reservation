@@ -9,7 +9,6 @@ class Program(models.Model):
     name = models.CharField(max_length=255)
     starts_at = models.DateTimeField()
     ends_at = models.DateTimeField()
-    notify_at = models.TimeField()
     queueable = models.BooleanField()
     cancel_threshold = models.TimeField()
 
